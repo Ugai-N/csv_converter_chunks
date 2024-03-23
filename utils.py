@@ -69,7 +69,8 @@ def generate_csv_schema(lines_qty, file_csv):  # (1.45 sec for 1000) & (155,26 f
     generating_time = time.time() - start_time
     print(f'generating_time: {generating_time}')
 
-
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 #
 # def generate_csv_from_pddf(x, file_csv):  # 16 sec for 1000
 #     """Generating CSV file with random data (qty of lines -> 100 ** 3)"""
