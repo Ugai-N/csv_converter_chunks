@@ -24,12 +24,13 @@ class ConverterThreading(BasicConverter):
             for i, chunk in enumerate(chunks):
                 chunks_length.append(len(chunk))
                 with tqdm(total=len(chunk), desc=f'chunk {i + 1}') as pbar:
-                    futures.append(executor.submit(self.convert_chunk, (i + 1), chunk, self.output, pq_schema))
-                    pbar.update()
+                    future = executor.submit(self.convert_chunk, (i + 1), chunk, pq_schema)
+                    futures.append(future)
+                    pbar.update(len(chunk))
 
             for future in as_completed(futures):
-                # print(f'{future.result()} ---> completed\n')
-                pbar.update()
+                print(f'{future.result()} ---> completed\n')
+                # pbar.update()
 
         convert_time = time.time() - start_time
         self.converting_time = convert_time

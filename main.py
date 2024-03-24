@@ -4,6 +4,8 @@ from pathlib import Path
 
 from converters.process import ConverterProcessing
 from converters.thread import ConverterThreading
+from converters.thread_UPD import ConverterThreadingParallel
+from utils import generate_csv_schema
 
 
 def main():
@@ -13,19 +15,21 @@ def main():
     file_name = 'test100'
     output_path = Path(__file__).resolve().parent.joinpath('data', f'{file_name}')
     file_csv = Path(__file__).resolve().parent.joinpath('data', f'{str(file_name)}.csv')
-    file_csv = 'data/one_mil_2.csv'
-    file_csv = 'data/test100.csv'
+    file_csv = 'data_dev/one_mil_2.csv'
+    file_csv = 'data_dev/test100.csv'
 
-    # generate_csv_schema(10**3, file_csv)
+    # generate_csv_schema(100000, file_csv)
 
-    # converter = ConverterProcessing(file_csv, output_path)
-    converter = ConverterThreading(file_csv, output_path)
+    converter = ConverterProcessing(file_csv, output_path)
+    # converter = ConverterThreading(file_csv, output_path)
     # converter = ConverterSerial(file_csv, output_path)
+    # converter = ConverterThreadingParallel(file_csv, output_path)
 
-    converter.run(10_000)
+    converter.run(8_000)
 
     converter.info()
 
+    # converter.convert_back()
 
 
 if __name__ == '__main__':

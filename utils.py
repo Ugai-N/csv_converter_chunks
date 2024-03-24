@@ -1,7 +1,3 @@
-import csv
-import datetime
-import random
-import string
 import time
 import pyarrow.csv as pacsv
 
@@ -69,37 +65,16 @@ def generate_csv_schema(lines_qty, file_csv):  # (1.45 sec for 1000) & (155,26 f
     generating_time = time.time() - start_time
     print(f'generating_time: {generating_time}')
 
+
 def chunker(seq, size):
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
-#
-# def generate_csv_from_pddf(x, file_csv):  # 16 sec for 1000
-#     """Generating CSV file with random data (qty of lines -> 100 ** 3)"""
-#     # pandas dataframe
-#     start_time = time.time()
-#
-#     data = pd.DataFrame()
-#     for i in range(0, x):
-#         data.loc[i, '1:id_uni(int)'] = int(fake.unique.random_number(digits=len(str(x)), fix_len=False))
-#         data.loc[i, '2:name'] = fake.name()
-#         data.loc[i, '3:email'] = fake.email()
-#         data.loc[i, '4:qty(int)'] = int(randint(1, x))
-#         data.loc[i, '5:this_year_date'] = fake.date_this_year()
-#         data.loc[i, '6:datetime_this_year'] = fake.date_time_this_year()
-#         data.loc[i, '7:country'] = fake.country()
-#         data.loc[i, '8:address'] = fake.address()
-#         data.loc[i, '9:latitude'] = fake.latitude()
-#         data.loc[i, '10:notes(txt)'] = fake.text(max_nb_chars=50)
-#         for y in range(50):
-#             data.loc[i, f'{y+11}:lexify'] = fake.lexify(text='Code: ??????????')
-#
-#         if (i+1) % 100 == 0:
-#             print(f'created: {i+1} rows')
-#     res = pa.Table.from_pandas(data)
-#     options = pacsv.WriteOptions(include_header=True)
-#     pacsv.write_csv(res, file_csv, options)
-#
-#     generating_time = time.time() - start_time
-#     print(f'generating_time: {generating_time}')
+
+# ------- TRIAL FUNCTIONS____________
+
+
+def chunker0(index, start, seq, size):
+    stop_pos = min(start + size, len(seq))
+    return index, seq[start:stop_pos]
 
 
 def generate_csv_panda(x, file_csv):  # 15 sec for 1000
@@ -126,36 +101,3 @@ def generate_csv_panda(x, file_csv):  # 15 sec for 1000
     data.to_csv(file_csv, index=False)
     generating_time = time.time() - start_time
     print(f'generating_time: {generating_time}')
-
-
-def ff():
-    print((10 ** 6) // 10)
-    print(fake.pystr(min_chars=10, max_chars=255))
-    print(fake.text(max_nb_chars=50))
-
-
-def read(file):
-    # parse_options = pacsv.ParseOptions(delimiter="\t", quote_char="^")
-    df = pd.read_csv(file)
-    # df = pd.read_csv(file, sep=',')
-    # for col in df:
-    #     print(f"----> {col}")
-    print(df)
-
-
-
-def read2(file):
-    with open(file) as csv_file:
-        hdr = csv.Sniffer().has_header(csv_file.read())
-        csv_file.seek(0)
-        r = csv.reader(csv_file)
-        # mailing_list = []
-        if hdr:
-            next(r)
-        for row in r:
-            print(row)
-            if '\n' in row:
-                print('found')
-            # mailing_list.append(row)
-
-    # mailing_list

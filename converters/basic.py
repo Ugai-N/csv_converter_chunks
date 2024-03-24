@@ -4,7 +4,6 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 import pyarrow.dataset as ds
-import pandas as pd
 import pyarrow.parquet as pq
 import pyarrow as pa
 
@@ -34,7 +33,7 @@ class BasicConverter(ABC):
             raise Exception("Seems that the converter has not been launched")
 
         print(f"\nInput file had: {len(list(csv.reader(open(self.input), delimiter=','))) - 1} rows"
-              f"\nOutput dir has: {pq.read_table(f'{self.output}').shape[0]} rows in ___ files")
+              f"\nOutput dir has: {pq.read_table(f'{self.output}').shape[0]} rows in {len(os.listdir(self.output))} files")
 
     def convert_back(self):
         # start_time = time.time()
@@ -52,7 +51,7 @@ class BasicConverter(ABC):
         dataset.read().to_pandas().to_csv(converted_back_file, index=False)
 
         print(f"Info on BACK convertion:\n"
-              f"total {len(pd.read_csv(converted_back_file))} rows\n\n")
+              f"total {len(list(csv.reader(open(converted_back_file), delimiter=','))) - 1} rows\n\n")
         # convert_time = time.time() - start_time
         # print(f'{convert_time}')
 
@@ -86,22 +85,37 @@ class BasicConverter(ABC):
         os.makedirs(output, exist_ok=True)
         return output
 
-    @staticmethod
-    def convert_chunk(num, chunk, output_dir, parquet_schema):
+    def convert_chunk(self, num, chunk, parquet_schema):
         # print(type(chunk))
-        # for i in chunk:
-        #     print(i)
-        #     break
+
         # generate output file name
-        chunk_file = Path(__file__).resolve().parent.joinpath(f'{output_dir}', f'parquet_{num}.parquet')
+        chunk_file = Path(__file__).resolve().parent.joinpath(f'{self.output}', f'parquet_{num}.parquet')
 
         # generate table
         table = pa.Table.from_pylist(chunk)
         # print(table)
-        # # table = pa.Table.from_pylist(chunk, schema=parquet_schema)
-        # # write table into parquet
-        pq.write_table(table, chunk_file)
+        # table = pa.Table.from_pylist(chunk, schema=parquet_schema)
+        # table = pa.Table.from_pandas(chunk, schema=parquet_schema) --> when chunks formed from pd.read
 
+        # write table into parquet
+        pq.write_table(table, chunk_file)
+        return num
+
+    def convert_chunk0(self, future):
+        # print(type(chunk))
+        num, chunk = future.result()[0], future.result()[1]
+        # generate output file name
+        chunk_file = Path(__file__).resolve().parent.joinpath(f'{self.output}', f'parquet_{num}.parquet')
+
+        # generate table
+        table = pa.Table.from_pylist(chunk)
+        # print(table)
+        # table = pa.Table.from_pylist(chunk, schema=parquet_schema)
+        # table = pa.Table.from_pandas(chunk, schema=parquet_schema) --> when chunks formed from pd.read
+
+        # write table into parquet
+        pq.write_table(table, chunk_file)
+        print(f'{num} ---> finished writing parquet')
         return num
 
     @abstractmethod
