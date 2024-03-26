@@ -86,8 +86,6 @@ class BasicConverter(ABC):
         return output
 
     def convert_chunk(self, num, chunk, parquet_schema):
-        # print(type(chunk))
-
         # generate output file name
         chunk_file = Path(__file__).resolve().parent.joinpath(f'{self.output}', f'parquet_{num}.parquet')
 
@@ -100,6 +98,12 @@ class BasicConverter(ABC):
         # write table into parquet
         pq.write_table(table, chunk_file)
         return num
+
+
+
+
+
+
 
     def convert_chunk0(self, future):
         # print(type(chunk))
@@ -117,6 +121,100 @@ class BasicConverter(ABC):
         pq.write_table(table, chunk_file)
         print(f'{num} ---> finished writing parquet')
         return num
+
+    def convert_chunk_test(self, num, chunk, parquet_schema):
+        # print(chunk)
+        # print(type(chunk))
+        keys = parquet_schema.names
+        final_dict = {}
+        for row in chunk:
+            values = row
+            my_dict = dict(zip(keys, values))
+            print(my_dict)
+            final_dict.update(my_dict)
+        # generate output file name
+        chunk_file = Path(__file__).resolve().parent.joinpath(f'{self.output}', f'parquet_{num}.parquet')
+
+        # generate table
+        table = pa.Table.from_pylist(final_dict)
+        # print(table)
+        # table = pa.Table.from_pylist(chunk, schema=parquet_schema)
+        # table = pa.Table.from_pandas(chunk, schema=parquet_schema) --> when chunks formed from pd.read
+
+        # write table into parquet
+        pq.write_table(table, chunk_file)
+        return num
+
+    def make_chunks_test(self, chunksize):
+        print('start reading')
+        start_time = time.time()
+
+        # check breaklines:
+        f = open(self.input, "r")
+        lines = f.readlines()
+
+        file_ok = True
+        for line in lines[1:]:
+            if not line.endswith('"\n'):
+                print('oooooooooopd')
+                file_ok = False
+
+        if file_ok:
+        # reading
+            lines_lst = []
+            with open(self.input, newline='') as csvfile:
+                lines = csv.reader(csvfile, delimiter=',', quotechar=';')
+                for line in lines:
+                    lines_lst.append(line)
+                    row = []
+                    for item in line[0].split(';'):
+                        row.append(item)
+                        # print(item)
+            # print(lines_lst)
+            chunks = [group for group in chunker(lines_lst, chunksize)]
+
+            dataset = ds.dataset(self.input, format="csv")
+            pq_schema = dataset.schema
+
+            read_time = time.time() - start_time
+            self.reading_time = read_time
+            print('stop reading')
+            return chunks, pq_schema
+
+        else:
+            raise Exception('ooooooops')
+
+        # # scan/read csv and split into chunks:
+        # f = open(self.input, "r")
+        # lines = f.readlines()
+        #
+        # file_ok = True
+        # lines_lst = []
+        # for line in lines[1:]:
+        #     print(line)
+        #     lines_lst.append(line)
+        #     if not line.endswith('"\n'):
+        #         print('oooooooooopd')
+        #         file_ok = False
+        # # print(len(lines_lst))
+        # if file_ok:
+        #     chunks = [group for group in chunker(lines_lst, chunksize)]
+        #     print(f"первый чанк{chunks[0]}")
+        #     print(f"первый чанк{type(chunks[0])}")
+        # else:
+        #     raise Exception('ooooooops')
+        #
+        # # take dataset schema from input csv
+        # dataset = ds.dataset(self.input, format="csv")
+        # pq_schema = dataset.schema
+        #
+        # read_time = time.time() - start_time
+        # self.reading_time = read_time
+        # print('stop reading')
+        # return chunks, pq_schema
+
+
+
 
     @abstractmethod
     def run(self, *kwargs):

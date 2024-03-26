@@ -42,7 +42,7 @@ def generate_csv_schema(lines_qty, file_csv):  # (1.45 sec for 1000) & (155,26 f
             my_schema.field(4).name: fake.date_this_year(),
             my_schema.field(5).name: fake.date_time_this_year(),
             my_schema.field(6).name: fake.country(),
-            my_schema.field(7).name: fake.address(),
+            my_schema.field(7).name: fake.country(),
             my_schema.field(8).name: fake.pyfloat(positive=True, max_value=10, right_digits=2),
             my_schema.field(9).name: fake.text(max_nb_chars=50)
         }
